@@ -2,8 +2,10 @@
 
 'use client'
 
-import { Bell, ChevronLeft, ChevronRight, MoreHorizontal, Search, User } from "lucide-react"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { ChevronLeft, ChevronRight, MoreHorizontal, Search, User } from "lucide-react"
+// Remove unused imports
+// import { Bell } from "lucide-react"
+// import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
 
