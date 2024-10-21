@@ -2,12 +2,13 @@
 
 'use client'
 
-import { ChevronLeft, ChevronRight, MoreHorizontal, Search, User } from "lucide-react"
+import { ChevronLeft, ChevronRight, MoreHorizontal, Search } from "lucide-react"
 // Remove unused imports
 // import { Bell } from "lucide-react"
 // import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
+import { UserButton } from "@clerk/nextjs";
 
 export function LearningPlatform() {
   return (
@@ -31,9 +32,7 @@ export function LearningPlatform() {
               <Button variant="ghost" size="icon">
                 <Search className="h-5 w-5" />
               </Button>
-              <Button variant="ghost" size="icon">
-                <User className="h-5 w-5" />
-              </Button>
+              <UserButton afterSignOutUrl="/" />
             </div>
           </div>
         </div>
