@@ -5,7 +5,8 @@ import {
   SignIn,
   SignedIn,
   SignedOut,
-  UserButton
+  UserButton,
+  SignUp
 } from '@clerk/nextjs'
 import "./globals.css";
 
@@ -34,14 +35,10 @@ export default function RootLayout({
     <ClerkProvider>
       <html lang="en">
         <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-          <SignedOut>
-            <SignIn routing="hash" />
-          </SignedOut>
-          <SignedIn>
-            {children}
-          </SignedIn>
+          {children}
         </body>
       </html>
     </ClerkProvider>
   );
 }
+
