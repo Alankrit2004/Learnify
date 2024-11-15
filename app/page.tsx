@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/componen
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
 import { useUser } from "@clerk/nextjs";
+import { useRouter } from 'next/navigation';
 
 interface BranchSelectionProps {
   setSelectedBranch: (branch: string | null) => void;
@@ -12,10 +13,31 @@ interface BranchSelectionProps {
   onSubmit: () => void;
 }
 
-export default function BranchSelection({ setSelectedBranch, setSelectedSemester, onSubmit }: BranchSelectionProps) {
+export default function Home() {
+  const [branch, setBranch] = useState<string | null>(null);
+  const [semester, setSemester] = useState<string | null>(null);
+  const router = useRouter();
+
+  const handleSubmit = () => {
+    // You can add any additional logic here when form is submitted
+    console.log('Form submitted with:', { branch, semester });
+    router.push('/dashboard');
+  };
+
+  return (
+    <BranchSelection
+      setSelectedBranch={setBranch}
+      setSelectedSemester={setSemester}
+      onSubmit={handleSubmit}
+    />
+  );
+}
+
+export function BranchSelection({ setSelectedBranch, setSelectedSemester, onSubmit }: BranchSelectionProps) {
   const { user } = useUser();
   const [selectedBranch, localSetSelectedBranch] = useState<string | null>(null);
   const [selectedSemester, localSetSelectedSemester] = useState<string | null>(null);
+  const router = useRouter();
 
   const branches = [
     { id: 'ai', name: 'AI' },
@@ -31,13 +53,20 @@ export default function BranchSelection({ setSelectedBranch, setSelectedSemester
 
   const handleSubmit = () => {
     if (selectedBranch && selectedSemester) {
+      localStorage.setItem('selectedBranch', selectedBranch);
+      localStorage.setItem('selectedSemester', selectedSemester);
+      
       setSelectedBranch(selectedBranch);
       setSelectedSemester(selectedSemester);
+      
       toast({
         title: "Selection Submitted",
         description: `Branch: ${selectedBranch}, Semester: ${selectedSemester}`,
       });
+      
       onSubmit();
+      
+      router.push('/dashboard');
     } else {
       toast({
         title: "Incomplete Selection",
@@ -46,6 +75,8 @@ export default function BranchSelection({ setSelectedBranch, setSelectedSemester
       });
     }
   };
+
+  console.log(setSelectedBranch);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -99,4 +130,4 @@ export default function BranchSelection({ setSelectedBranch, setSelectedSemester
       </Card>
     </div>
   );
-} 
+}
