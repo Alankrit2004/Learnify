@@ -46,9 +46,11 @@ export function LearningPlatform() {
         try {
           const branch = storedBranch as 'ai' | 'ds';
           const semester = storedSemester as '1st' | '3rd' | '5th' | '7th';
+          console.log('Loading data for:', { branch, semester });
+          console.log('Available data:', dataMapping);
           const data = dataMapping[branch][semester];
           
-          console.log('Loading initial course data:', { branch, semester, data });
+          console.log('Loaded course data:', data);
           
           if (Array.isArray(data)) {
             setCourseData(data);
@@ -72,7 +74,9 @@ export function LearningPlatform() {
       
       const storedSemester = localStorage.getItem('selectedSemester');
       if (storedSemester) {
+        console.log('Loading data after branch selection:', { branch, semester: storedSemester });
         const data = dataMapping[branch as 'ai' | 'ds'][storedSemester as '1st' | '3rd' | '5th' | '7th'];
+        console.log('Loaded course data:', data);
         setCourseData(data || []);
       }
     }
@@ -86,7 +90,9 @@ export function LearningPlatform() {
       
       const storedBranch = localStorage.getItem('selectedBranch');
       if (storedBranch) {
+        console.log('Loading data after semester selection:', { branch: storedBranch, semester });
         const data = dataMapping[storedBranch as 'ai' | 'ds'][semester as '1st' | '3rd' | '5th' | '7th'];
+        console.log('Loaded course data:', data);
         setCourseData(data || []);
       }
     }
