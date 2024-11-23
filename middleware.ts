@@ -1,12 +1,23 @@
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
+import { NextResponse } from 'next/server'
 
 const isPublicRoute = createRouteMatcher(['/sign-in(.*)', '/sign-up(.*)'])
 
 export default clerkMiddleware((auth, request) => {
-  console.log('Middleware running');
-  console.log('Publishable Key:', process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY);
   if (!isPublicRoute(request)) {
     auth().protect()
+    
+    // Only check for branch selection on the home page
+    if (request.nextUrl.pathname === '/') {
+      // Get cookies from the request
+      const selectedBranch = request.cookies.get('selectedBranch')?.value
+      const selectedSemester = request.cookies.get('selectedSemester')?.value
+
+      if (selectedBranch && selectedSemester) {
+        // Redirect to dashboard if selections exist
+        return NextResponse.redirect(new URL('/dashboard', request.url))
+      }
+    }
   }
 })
 

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
@@ -17,6 +17,16 @@ export default function Home() {
   const [branch, setBranch] = useState<string | null>(null);
   const [semester, setSemester] = useState<string | null>(null);
   const router = useRouter();
+
+  // Add check for existing selection
+  useEffect(() => {
+    const savedBranch = getCookie('selectedBranch');
+    const savedSemester = getCookie('selectedSemester');
+    
+    if (savedBranch && savedSemester) {
+      router.push('/dashboard');
+    }
+  }, [router]);
 
   const handleSubmit = () => {
     // You can add any additional logic here when form is submitted
@@ -53,8 +63,8 @@ export function BranchSelection({ setSelectedBranch, setSelectedSemester, onSubm
 
   const handleSubmit = () => {
     if (selectedBranch && selectedSemester) {
-      localStorage.setItem('selectedBranch', selectedBranch);
-      localStorage.setItem('selectedSemester', selectedSemester);
+      document.cookie = `selectedBranch=${selectedBranch};path=/;max-age=31536000`;
+      document.cookie = `selectedSemester=${selectedSemester};path=/;max-age=31536000`;
       
       setSelectedBranch(selectedBranch);
       setSelectedSemester(selectedSemester);
@@ -130,4 +140,16 @@ export function BranchSelection({ setSelectedBranch, setSelectedSemester, onSubm
       </Card>
     </div>
   );
+}
+
+function getCookie(name: string): string | null {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  
+  if (parts.length === 2) {
+    const cookieValue = parts.pop()?.split(';').shift();
+    return cookieValue ?? null;
+  }
+  
+  return null;
 }

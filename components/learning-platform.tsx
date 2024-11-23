@@ -11,11 +11,19 @@ import { dataMapping } from "@/data/courseData";
 import { useRouter } from 'next/navigation';
 import { BranchSelection } from "@/app/page";
 import { usePathname } from 'next/navigation';
+import { UserButton } from "@clerk/nextjs";
 
 interface CourseData {
   title: string;
   color: string;
   icon: string;
+}
+
+function getCookie(name: string): string | undefined {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop()?.split(';').shift() ?? undefined;
+  return undefined;
 }
 
 export function LearningPlatform() {
@@ -34,10 +42,10 @@ export function LearningPlatform() {
   // Load stored selections and update course data
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const storedBranch = localStorage.getItem('selectedBranch');
-      const storedSemester = localStorage.getItem('selectedSemester');
+      const storedBranch = getCookie('selectedBranch');
+      const storedSemester = getCookie('selectedSemester');
       
-      console.log('Stored values:', { storedBranch, storedSemester });
+      console.log('Initial load - Stored values:', { storedBranch, storedSemester });
       
       if (storedBranch && storedSemester) {
         setSelectedBranch(storedBranch);
@@ -46,16 +54,15 @@ export function LearningPlatform() {
         try {
           const branch = storedBranch as 'ai' | 'ds';
           const semester = storedSemester as '1st' | '3rd' | '5th' | '7th';
-          console.log('Loading data for:', { branch, semester });
-          console.log('Available data:', dataMapping);
+          console.log('Loading initial data for:', { branch, semester });
           const data = dataMapping[branch][semester];
           
-          console.log('Loaded course data:', data);
+          console.log('Loaded initial course data:', data);
           
           if (Array.isArray(data)) {
             setCourseData(data);
           } else {
-            console.error('Invalid course data format:', data);
+            console.error('Invalid initial course data format:', data);
             setCourseData([]);
           }
         } catch (error) {
@@ -71,13 +78,24 @@ export function LearningPlatform() {
     setSelectedBranch(branch);
     if (branch && typeof window !== 'undefined') {
       localStorage.setItem('selectedBranch', branch);
+      document.cookie = `selectedBranch=${branch};path=/;max-age=31536000`;
       
-      const storedSemester = localStorage.getItem('selectedSemester');
+      const storedSemester = getCookie('selectedSemester');
       if (storedSemester) {
         console.log('Loading data after branch selection:', { branch, semester: storedSemester });
-        const data = dataMapping[branch as 'ai' | 'ds'][storedSemester as '1st' | '3rd' | '5th' | '7th'];
-        console.log('Loaded course data:', data);
-        setCourseData(data || []);
+        try {
+          const data = dataMapping[branch as 'ai' | 'ds'][storedSemester as '1st' | '3rd' | '5th' | '7th'];
+          console.log('Loaded course data:', data);
+          if (Array.isArray(data)) {
+            setCourseData(data);
+          } else {
+            console.error('Invalid course data format:', data);
+            setCourseData([]);
+          }
+        } catch (error) {
+          console.error('Error loading course data:', error);
+          setCourseData([]);
+        }
       }
     }
   };
@@ -87,13 +105,24 @@ export function LearningPlatform() {
     setSelectedSemester(semester);
     if (semester && typeof window !== 'undefined') {
       localStorage.setItem('selectedSemester', semester);
+      document.cookie = `selectedSemester=${semester};path=/;max-age=31536000`;
       
-      const storedBranch = localStorage.getItem('selectedBranch');
+      const storedBranch = getCookie('selectedBranch');
       if (storedBranch) {
         console.log('Loading data after semester selection:', { branch: storedBranch, semester });
-        const data = dataMapping[storedBranch as 'ai' | 'ds'][semester as '1st' | '3rd' | '5th' | '7th'];
-        console.log('Loaded course data:', data);
-        setCourseData(data || []);
+        try {
+          const data = dataMapping[storedBranch as 'ai' | 'ds'][semester as '1st' | '3rd' | '5th' | '7th'];
+          console.log('Loaded course data:', data);
+          if (Array.isArray(data)) {
+            setCourseData(data);
+          } else {
+            console.error('Invalid course data format:', data);
+            setCourseData([]);
+          }
+        } catch (error) {
+          console.error('Error loading course data:', error);
+          setCourseData([]);
+        }
       }
     }
   };
@@ -101,6 +130,15 @@ export function LearningPlatform() {
   const handleSubmit = () => {
     if (selectedBranch && selectedSemester) {
       console.log('Submitting with:', { selectedBranch, selectedSemester });
+      try {
+        const data = dataMapping[selectedBranch as 'ai' | 'ds'][selectedSemester as '1st' | '3rd' | '5th' | '7th'];
+        console.log('Setting course data on submit:', data);
+        if (Array.isArray(data)) {
+          setCourseData(data);
+        }
+      } catch (error) {
+        console.error('Error setting course data on submit:', error);
+      }
       router.push('/dashboard');
     }
   };
@@ -125,31 +163,51 @@ export function LearningPlatform() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <div className="w-8 h-8 bg-purple-200 rounded-full flex items-center justify-center">
-                  <span className="text-purple-600 font-semibold">e</span>
-                </div>
-              </div>
-              <nav className="ml-6 flex space-x-8">
+              <nav className="flex space-x-8">
                 <a href="#" className="text-purple-600 font-medium">Home</a>
                 <a href="#" className="text-gray-600 hover:text-gray-900">Subjects</a>
               </nav>
+            </div>
+            <div className="flex items-center space-x-4">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  // Clear existing selections and course data
+                  localStorage.removeItem('selectedBranch');
+                  localStorage.removeItem('selectedSemester');
+                  document.cookie = 'selectedBranch=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT';
+                  document.cookie = 'selectedSemester=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT';
+                  setSelectedBranch(null);
+                  setSelectedSemester(null);
+                  setCourseData([]);
+                  router.push('/');
+                }}
+              >
+                Change Branch
+              </Button>
+              <UserButton afterSignOutUrl="/"/>
             </div>
           </div>
         </div>
       </header>
 
       <div className="flex flex-1 overflow-hidden">
-        <ProfileSidebar />
-        {!isOnDashboard && (
+        {!isOnDashboard ? (
           <BranchSelection 
             setSelectedBranch={handleBranchSelection} 
             setSelectedSemester={handleSemesterSelection} 
             onSubmit={handleSubmit}
           />
+        ) : (
+          <div className="flex gap-6 p-6 w-full">
+            <ProfileSidebar />
+            <CourseSection courseData={courseData} />
+            <CalenderAndSchedule 
+              selectedBranch={selectedBranch}
+              selectedSemester={selectedSemester}
+            />
+          </div>
         )}
-        <CourseSection courseData={courseData} />
-        <CalenderAndSchedule />
       </div>
     </div>
   );
