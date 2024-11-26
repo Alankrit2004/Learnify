@@ -1,13 +1,36 @@
-import React, { useState } from "react";
-import { Button } from "./button1";
-import { useUser } from "@clerk/nextjs";
+import React, { useState, useEffect } from "react";
+import { Button } from "./button";
 import { X } from "lucide-react";
+import { useUser } from "@clerk/nextjs";
+import { timetableData } from "@/data/timetableData";
+import Cookies from "js-cookie";
+
+type Day = "Monday" | "Tuesday" | "Wednesday" | "Thursday" | "Friday" | "Saturday";
 
 export function ProfileSidebar() {
     const { user } = useUser();
     const [inputText, setInputText] = useState("");
     const [notes, setNotes] = useState<string[]>([]);
     const [showAddNewNote, setShowAddNewNote] = useState(false);
+    const [todayClasses, setTodayClasses] = useState(0);
+
+    useEffect(() => {
+        const selectedBranch = Cookies.get('selectedBranch');
+        const selectedSemester = Cookies.get('selectedSemester');
+        
+        if (selectedBranch && selectedSemester) {
+            const days: Day[] = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+            const today = new Date().getDay(); // 0 is Sunday, 1 is Monday, etc.
+            const dayIndex = today === 0 ? 5 : today - 1; // Map Sunday to Saturday, otherwise subtract 1
+            const currentDay = days[dayIndex];
+            
+            const branch = selectedBranch.toUpperCase() as keyof typeof timetableData;
+            const semester = selectedSemester.charAt(0) as keyof (typeof timetableData)[keyof typeof timetableData];
+            
+            const classesForToday = timetableData[branch]?.[semester]?.[currentDay]?.length || 0;
+            setTodayClasses(classesForToday);
+        }
+    }, []);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setInputText(e.target.value);
@@ -37,7 +60,7 @@ export function ProfileSidebar() {
     }
 
     return (
-        <div className="w-1/4 bg-white p-6 flex flex-col">
+        <div className="bg-white rounded-lg shadow-sm border p-6 w-full h-full">
             <div className="flex flex-col items-center mb-6">
                 <div className="w-32 h-32 relative mb-4">
                     {user?.imageUrl ? (
@@ -54,16 +77,20 @@ export function ProfileSidebar() {
                     )}
                 </div>
                 <h2 className="text-2xl font-bold mb-1">{user?.fullName || "Welcome"}</h2>
-                <p className="text-sm text-gray-500">5th Semester Data Science</p>
+                <p className="text-sm text-gray-500">
+                    {Cookies.get('selectedBranch') && Cookies.get('selectedSemester') 
+                        ? `${Cookies.get('selectedSemester')} Semester ${Cookies.get('selectedBranch')}`
+                        : "Select Branch & Semester"}
+                </p>
             </div>
             <div className="grid grid-cols-3 gap-4 mb-6">
                 <div className="text-center">
-                    <div className="text-2xl font-bold">10</div>
-                    <div className="text-xs text-gray-500">Total Classes Today</div>
+                    <div className="text-2xl font-bold">{todayClasses}</div>
+                    <div className="text-xs text-gray-500">Classes Today</div>
                 </div>
                 <div className="text-center">
                     <div className="text-2xl font-bold">8/10</div>
-                    <div className="text-xs text-gray-500">Average score</div>
+                    <div className="text-xs text-gray-500">Progress</div>
                 </div>
                 <div className="text-center">
                     <div className="text-2xl font-bold">3</div>

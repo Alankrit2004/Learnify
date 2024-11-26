@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -7,11 +6,12 @@ import { Button } from "@/components/ui/button";
 import { CourseSection } from "./ui/CourseSection";
 import { CalenderAndSchedule } from "./ui/CalenderAndSchedule";
 import { ProfileSidebar } from "./ui/ProfileSidebar";
+import { SubjectsPage } from "./ui/SubjectsPage";
 import { dataMapping } from "@/data/courseData";
 import { useRouter } from 'next/navigation';
-import { BranchSelection } from "@/app/page";
 import { usePathname } from 'next/navigation';
 import { UserButton } from "@clerk/nextjs";
+import Cookies from 'js-cookie';
 
 interface CourseData {
   title: string;
@@ -33,6 +33,8 @@ export function LearningPlatform() {
   const [selectedSemester, setSelectedSemester] = useState<string | null>(null);
   const [courseData, setCourseData] = useState<CourseData[]>([]);
   const [isClient, setIsClient] = useState(false);
+  const [currentView, setCurrentView] = useState<'courses' | 'subjects'>('courses');
+  const [showBranchSelection, setShowBranchSelection] = useState(false);
 
   // Set isClient to true when component mounts
   useEffect(() => {
@@ -41,174 +43,162 @@ export function LearningPlatform() {
 
   // Load stored selections and update course data
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const storedBranch = getCookie('selectedBranch');
-      const storedSemester = getCookie('selectedSemester');
-      
-      console.log('Initial load - Stored values:', { storedBranch, storedSemester });
-      
-      if (storedBranch && storedSemester) {
-        setSelectedBranch(storedBranch);
-        setSelectedSemester(storedSemester);
-        
-        try {
-          const branch = storedBranch as 'ai' | 'ds';
-          const semester = storedSemester as '1st' | '3rd' | '5th' | '7th';
-          console.log('Loading initial data for:', { branch, semester });
-          const data = dataMapping[branch][semester];
-          
-          console.log('Loaded initial course data:', data);
-          
-          if (Array.isArray(data)) {
-            setCourseData(data);
-          } else {
-            console.error('Invalid initial course data format:', data);
-            setCourseData([]);
-          }
-        } catch (error) {
-          console.error('Error loading initial course data:', error);
-          setCourseData([]);
-        }
-      }
+    const branch = Cookies.get('selectedBranch');
+    const semester = Cookies.get('selectedSemester');
+    if (branch) setSelectedBranch(branch);
+    if (semester) setSelectedSemester(semester);
+    if (!branch || !semester) {
+      setShowBranchSelection(true);
     }
   }, []);
 
   const handleBranchSelection = (branch: string | null) => {
-    console.log('Branch selected:', branch);
     setSelectedBranch(branch);
     if (branch && typeof window !== 'undefined') {
-      localStorage.setItem('selectedBranch', branch);
       document.cookie = `selectedBranch=${branch};path=/;max-age=31536000`;
-      
-      const storedSemester = getCookie('selectedSemester');
-      if (storedSemester) {
-        console.log('Loading data after branch selection:', { branch, semester: storedSemester });
-        try {
-          const data = dataMapping[branch as 'ai' | 'ds'][storedSemester as '1st' | '3rd' | '5th' | '7th'];
-          console.log('Loaded course data:', data);
-          if (Array.isArray(data)) {
-            setCourseData(data);
-          } else {
-            console.error('Invalid course data format:', data);
-            setCourseData([]);
-          }
-        } catch (error) {
-          console.error('Error loading course data:', error);
-          setCourseData([]);
-        }
-      }
     }
   };
 
   const handleSemesterSelection = (semester: string | null) => {
-    console.log('Semester selected:', semester);
     setSelectedSemester(semester);
     if (semester && typeof window !== 'undefined') {
-      localStorage.setItem('selectedSemester', semester);
       document.cookie = `selectedSemester=${semester};path=/;max-age=31536000`;
-      
-      const storedBranch = getCookie('selectedBranch');
-      if (storedBranch) {
-        console.log('Loading data after semester selection:', { branch: storedBranch, semester });
-        try {
-          const data = dataMapping[storedBranch as 'ai' | 'ds'][semester as '1st' | '3rd' | '5th' | '7th'];
-          console.log('Loaded course data:', data);
-          if (Array.isArray(data)) {
-            setCourseData(data);
-          } else {
-            console.error('Invalid course data format:', data);
-            setCourseData([]);
-          }
-        } catch (error) {
-          console.error('Error loading course data:', error);
-          setCourseData([]);
-        }
-      }
     }
   };
 
   const handleSubmit = () => {
     if (selectedBranch && selectedSemester) {
-      console.log('Submitting with:', { selectedBranch, selectedSemester });
       try {
-        const data = dataMapping[selectedBranch as 'ai' | 'ds'][selectedSemester as '1st' | '3rd' | '5th' | '7th'];
-        console.log('Setting course data on submit:', data);
+        const branch = selectedBranch as keyof typeof dataMapping;
+        const semester = selectedSemester as keyof (typeof dataMapping)[keyof typeof dataMapping];
+        const data = dataMapping[branch][semester];
         if (Array.isArray(data)) {
           setCourseData(data);
         }
       } catch (error) {
-        console.error('Error setting course data on submit:', error);
+        console.error('Error loading course data:', error);
+        setCourseData([]);
       }
-      router.push('/dashboard');
+      setShowBranchSelection(false);
     }
   };
 
-  // Only render content after client-side hydration
+  // Get courses based on selected branch and semester
+  const getCourses = () => {
+    if (!selectedBranch || !selectedSemester) return [];
+    try {
+      const branch = selectedBranch as keyof typeof dataMapping;
+      const semester = selectedSemester as keyof (typeof dataMapping)[keyof typeof dataMapping];
+      return dataMapping[branch][semester] || [];
+    } catch (error) {
+      console.error('Error loading course data:', error);
+      return [];
+    }
+  };
+
   if (!isClient) {
     return null;
   }
 
-  const isOnDashboard = pathname === '/dashboard';
-
-  console.log('Current state:', {
-    selectedBranch,
-    selectedSemester,
-    courseData: courseData.length,
-    isOnDashboard
-  });
-
   return (
-    <div className="flex flex-col h-screen bg-gray-100">
-      <header className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center">
-              <nav className="flex space-x-8">
-                <a href="#" className="text-purple-600 font-medium">Home</a>
-                <a href="#" className="text-gray-600 hover:text-gray-900">Subjects</a>
-              </nav>
-            </div>
-            <div className="flex items-center space-x-4">
-              <Button
-                variant="outline"
-                onClick={() => {
-                  // Clear existing selections and course data
-                  localStorage.removeItem('selectedBranch');
-                  localStorage.removeItem('selectedSemester');
-                  document.cookie = 'selectedBranch=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT';
-                  document.cookie = 'selectedSemester=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT';
-                  setSelectedBranch(null);
-                  setSelectedSemester(null);
-                  setCourseData([]);
-                  router.push('/');
-                }}
-              >
-                Change Branch
-              </Button>
-              <UserButton afterSignOutUrl="/"/>
-            </div>
+    <div className="flex flex-col min-h-screen bg-gray-50">
+      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="container flex h-14 max-w-full items-center justify-between px-4">
+          <div className="flex gap-4">
+            <Button
+              variant={currentView === 'courses' ? 'default' : 'outline'}
+              onClick={() => setCurrentView('courses')}
+            >
+              Courses
+            </Button>
+            <Button
+              variant={currentView === 'subjects' ? 'default' : 'outline'}
+              onClick={() => setCurrentView('subjects')}
+            >
+              Subjects
+            </Button>
+          </div>
+          <div className="flex items-center gap-4">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowBranchSelection(true);
+              }}
+            >
+              {selectedBranch && selectedSemester 
+                ? `${selectedBranch.toUpperCase()} - ${selectedSemester} Sem`
+                : 'Select Branch & Semester'}
+            </Button>
+            <UserButton afterSignOutUrl="/" />
           </div>
         </div>
       </header>
-
-      <div className="flex flex-1 overflow-hidden">
-        {!isOnDashboard ? (
-          <BranchSelection 
-            setSelectedBranch={handleBranchSelection} 
-            setSelectedSemester={handleSemesterSelection} 
-            onSubmit={handleSubmit}
-          />
-        ) : (
-          <div className="flex gap-6 p-6 w-full">
-            <ProfileSidebar />
-            <CourseSection courseData={courseData} />
-            <CalenderAndSchedule 
-              selectedBranch={selectedBranch}
-              selectedSemester={selectedSemester}
-            />
+      
+      <main className="flex-1 container max-w-full p-4">
+        {currentView === 'courses' ? (
+          <div className="grid h-[calc(100vh-5rem)] grid-cols-1 lg:grid-cols-3 gap-4">
+            <aside className="w-full">
+              <ProfileSidebar />
+            </aside>
+            <div className="w-full">
+              <CourseSection courses={getCourses()} />
+            </div>
+            <div className="w-full">
+              <CalenderAndSchedule 
+                selectedBranch={selectedBranch}
+                selectedSemester={selectedSemester}
+              />
+            </div>
           </div>
+        ) : (
+          <SubjectsPage />
         )}
-      </div>
+      </main>
+
+      {showBranchSelection && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
+            <h2 className="text-xl font-bold mb-4">Select Branch & Semester</h2>
+            
+            <div className="space-y-4 mb-6">
+              <h3 className="font-medium">Branch</h3>
+              <div className="grid grid-cols-2 gap-2">
+                {['ai', 'ds'].map((branch) => (
+                  <Button
+                    key={branch}
+                    variant={selectedBranch === branch ? 'default' : 'outline'}
+                    onClick={() => handleBranchSelection(branch)}
+                    className="w-full"
+                  >
+                    {branch.toUpperCase()}
+                  </Button>
+                ))}
+              </div>
+            </div>
+
+            {selectedBranch && (
+              <div className="space-y-4">
+                <h3 className="font-medium">Semester</h3>
+                <div className="grid grid-cols-2 gap-2">
+                  {['1st', '3rd', '5th', '7th'].map((semester) => (
+                    <Button
+                      key={semester}
+                      variant={selectedSemester === semester ? 'default' : 'outline'}
+                      onClick={() => {
+                        handleSemesterSelection(semester);
+                        handleSubmit();
+                      }}
+                      className="w-full"
+                    >
+                      {semester} Semester
+                    </Button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

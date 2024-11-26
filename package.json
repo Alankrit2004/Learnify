@@ -30,12 +30,16 @@
     "tesseract.js": "^5.1.1"
   },
   "devDependencies": {
+    "@radix-ui/react-accordion": "^1.2.1",
+    "@radix-ui/react-checkbox": "^1.1.2",
+    "@types/js-cookie": "^3.0.6",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "eslint": "^8",
     "eslint-config-next": "14.2.15",
     "postcss": "^8",
+    "shadcn-ui": "^0.9.3",
     "tailwindcss": "^3.4.1",
     "typescript": "^5"
   },
