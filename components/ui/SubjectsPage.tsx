@@ -35,7 +35,7 @@ export function SubjectsPage() {
     {
       title: "Machine Learning",
       color: "bg-red-200",
-      icon: "🎍",
+      icon: "🤖",
       units: [
         {
           name: "Introduction to ML",
@@ -50,11 +50,145 @@ export function SubjectsPage() {
           topics: [
             { id: "4", name: "Linear Regression", completed: false },
             { id: "5", name: "Classification", completed: false },
+            { id: "6", name: "Decision Trees", completed: false },
+            { id: "7", name: "Neural Networks", completed: false },
+          ],
+        },
+        {
+          name: "Unsupervised Learning",
+          topics: [
+            { id: "8", name: "Clustering", completed: false },
+            { id: "9", name: "Dimensionality Reduction", completed: false },
+            { id: "10", name: "Anomaly Detection", completed: false },
           ],
         },
       ],
     },
-    // Add more subjects here
+    {
+      title: "Natural Language Processing",
+      color: "bg-blue-200",
+      icon: "🌐",
+      units: [
+        {
+          name: "Frontend Basics",
+          topics: [
+            { id: "11", name: "HTML Fundamentals", completed: false },
+            { id: "12", name: "CSS Styling", completed: false },
+            { id: "13", name: "JavaScript Basics", completed: false },
+            { id: "14", name: "Responsive Design", completed: false },
+          ],
+        },
+        {
+          name: "Modern Frontend",
+          topics: [
+            { id: "15", name: "React Fundamentals", completed: false },
+            { id: "16", name: "State Management", completed: false },
+            { id: "17", name: "Next.js", completed: false },
+          ],
+        },
+        {
+          name: "Backend Development",
+          topics: [
+            { id: "18", name: "Node.js Basics", completed: false },
+            { id: "19", name: "RESTful APIs", completed: false },
+            { id: "20", name: "Database Integration", completed: false },
+          ],
+        },
+      ],
+    },
+    {
+      title: "Intelligent Data Analysis",
+      color: "bg-green-200",
+      icon: "📊",
+      units: [
+        {
+          name: "Data Analysis",
+          topics: [
+            { id: "21", name: "Python for Data Science", completed: false },
+            { id: "22", name: "Pandas", completed: false },
+            { id: "23", name: "Data Visualization", completed: false },
+          ],
+        },
+        {
+          name: "Statistics",
+          topics: [
+            { id: "24", name: "Descriptive Statistics", completed: false },
+            { id: "25", name: "Probability", completed: false },
+            { id: "26", name: "Hypothesis Testing", completed: false },
+          ],
+        },
+        {
+          name: "Big Data",
+          topics: [
+            { id: "27", name: "Data Processing", completed: false },
+            { id: "28", name: "Apache Spark", completed: false },
+            { id: "29", name: "Data Warehousing", completed: false },
+          ],
+        },
+      ],
+    },
+    {
+      title: "Cryptography and Network Security",
+      color: "bg-purple-200",
+      icon: "🔢",
+      units: [
+        {
+          name: "Calculus",
+          topics: [
+            { id: "30", name: "Limits and Continuity", completed: false },
+            { id: "31", name: "Derivatives", completed: false },
+            { id: "32", name: "Integration", completed: false },
+          ],
+        },
+        {
+          name: "Linear Algebra",
+          topics: [
+            { id: "33", name: "Vectors and Matrices", completed: false },
+            { id: "34", name: "Eigenvalues", completed: false },
+            { id: "35", name: "Linear Transformations", completed: false },
+          ],
+        },
+        {
+          name: "Discrete Mathematics",
+          topics: [
+            { id: "36", name: "Logic and Proofs", completed: false },
+            { id: "37", name: "Graph Theory", completed: false },
+            { id: "38", name: "Combinatorics", completed: false },
+          ],
+        },
+      ],
+    },
+    {
+      title: "MPIT",
+      color: "bg-yellow-200",
+      icon: "💻",
+      units: [
+        {
+          name: "Programming Fundamentals",
+          topics: [
+            { id: "39", name: "Variables and Data Types", completed: false },
+            { id: "40", name: "Control Structures", completed: false },
+            { id: "41", name: "Functions and Methods", completed: false },
+          ],
+        },
+        {
+          name: "Data Structures",
+          topics: [
+            { id: "42", name: "Arrays and Lists", completed: false },
+            { id: "43", name: "Trees and Graphs", completed: false },
+            { id: "44", name: "Hash Tables", completed: false },
+          ],
+        },
+        {
+          name: "Algorithms",
+          topics: [
+            { id: "45", name: "Sorting Algorithms", completed: false },
+            { id: "46", name: "Search Algorithms", completed: false },
+            { id: "47", name: "Dynamic Programming", completed: false },
+          ],
+        },
+      ],
+    }
   ]);
 
   const calculateProgress = (subject: Subject) => {
@@ -67,15 +201,27 @@ export function SubjectsPage() {
   };
 
   const toggleTopic = (subjectIndex: number, unitIndex: number, topicId: string) => {
-    setSubjects(prevSubjects => {
-      const newSubjects = [...prevSubjects];
-      const unit = newSubjects[subjectIndex].units[unitIndex];
-      const topic = unit.topics.find(t => t.id === topicId);
-      if (topic) {
-        topic.completed = !topic.completed;
-      }
-      return newSubjects;
-    });
+    setSubjects(prevSubjects => 
+      prevSubjects.map((subject, sIndex) => {
+        if (sIndex !== subjectIndex) return subject;
+        
+        return {
+          ...subject,
+          units: subject.units.map((unit, uIndex) => {
+            if (uIndex !== unitIndex) return unit;
+            
+            return {
+              ...unit,
+              topics: unit.topics.map(topic => 
+                topic.id === topicId 
+                  ? { ...topic, completed: !topic.completed }
+                  : topic
+              )
+            };
+          })
+        };
+      })
+    );
   };
 
   return (

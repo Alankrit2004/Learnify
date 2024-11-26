@@ -94,7 +94,7 @@ export function ProfileSidebar() {
                 </div>
                 <div className="text-center">
                     <div className="text-2xl font-bold">3</div>
-                    <div className="text-xs text-gray-500">Certificates obtained</div>
+                    <div className="text-xs text-gray-500">Topics studied</div>
                 </div>
             </div>
             <div className="bg-gray-100 rounded-lg p-4 mb-6 flex-grow">
