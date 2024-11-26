@@ -1,3 +1,40 @@
+# Learnify 📚
+
+**Learnify** is a student-focused academic management software designed to help users track their progress, manage assignments, and stay organized with a syllabus and timetable planner. Built using **TypeScript** and **JavaScript**, Learnify fetches and stores data via **JSON files**, offering a lightweight and efficient solution for academic tracking.
+
+---
+
+## Features 🚀
+
+- **Syllabus Tracking**: Mark topics as completed or important, and track your progress for each subject individually.
+- **Assignments Management**: Add, update, and view assignments with deadlines.
+- **Progress Visualization**: View progress using intuitive charts and graphs.
+- **Important Notes**: Store and manage important notes for quick reference.
+- **Internet References**: Link topics to helpful online resources for further study.
+- **Timetable Planner**: Organize your study schedule with a personalized timetable.
+- **Secure Authentication**: Authenticate users with **Clerk** for secure data access.
+
+---
+
+## Technology Stack 🛠️
+
+- **Frontend**: TypeScript, JavaScript, HTML, CSS
+- **Data Management**: JSON files
+- **Authentication**: Clerk
+
+---
+
+## Installation Guide 💻
+
+Follow these steps to set up and run Learnify locally:
+
+1. **Clone the Repository**:
+   ```bash
+   git clone https://github.com/Alankrit2004/learnify.git
+   cd learnify
+
+
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started
