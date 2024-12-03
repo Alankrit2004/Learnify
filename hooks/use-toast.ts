@@ -1,8 +1,6 @@
 "use client"
 
-// Inspired by react-hot-toast library
 import * as React from "react"
-
 import type {
   ToastActionElement,
   ToastProps,
@@ -140,7 +138,7 @@ function dispatch(action: Action) {
   })
 }
 
-type Toast = Omit<ToasterToast, "id">
+interface Toast extends Omit<ToasterToast, "id"> {}
 
 function toast({ ...props }: Toast) {
   const id = genId()
@@ -182,7 +180,7 @@ function useToast() {
         listeners.splice(index, 1)
       }
     }
-  }, [state])
+  }, [])
 
   return {
     ...state,
