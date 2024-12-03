@@ -144,7 +144,7 @@ export function ProfileSidebar() {
                         </div>
                     ))}
                     {notes.length === 0 && !showAddNewNote && (
-                        <p className="text-sm text-gray-500 text-center">No notes yet. Click 'New Note' to add one.</p>
+                        <p className="text-sm text-gray-500 text-center">No notes yet. Click &apos;New Note&apos; to add one.</p>
                     )}
                 </div>
             </div>
